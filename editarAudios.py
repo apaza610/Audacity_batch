@@ -55,34 +55,36 @@ def do_command(command):
     print("Rcvd: <<< \n" + response)
     return response
 
+def aplicar_efectos(mp4file):
+    mp3Nuevo = mp4file.replace(".mp4","NUEVO.mp3")
+    do_command('Import2: Filename=' + mp4file)
+    do_command('SelectAll:')
+    do_command('Compressor: Threshold=-20')
+    do_command('Limiter: thresh=-5')
+    do_command('Normalize:')
+    # do_command('Noise:')
+    do_command('Export2: Filename=' + mp3Nuevo)
+    do_command('RemoveTracks:')
+    # do_command('SetPreference: Name=GUI/Theme Value=classic Reload=1')
+
+    mp3file = mp4file.replace(".mp4","NUEVO.mp3")
+    mp4temp = mp4file.replace(".mp4","OLD.mp4")
+    mivideo = ffmpeg.input(mp4file)
+    miaudio = ffmpeg.input(mp3file)
+    salida = ffmpeg.output(miaudio, mivideo.video, mp4temp, shortest=None, vcodec='copy').run()
+    os.remove(mp4file)
+    os.remove(mp3file)
+    os.rename(mp4temp,mp4file)
+
 lMP4s = []
 def catch_mp4s():
     for root,dirs,files in os.walk(PATHTUTORIAL):       #D:\\borrar\\MiTutorial
         for filename in files:
             if os.path.splitext(filename)[1] == '.mp4':
                 elpath = os.path.join(root,filename)
+                if " " in elpath:
+                    print("------Error: nombres no pueden contener espacios------")
+                    break
                 lMP4s.append(elpath)
+                aplicar_efectos(elpath)
 catch_mp4s()
-
-def aplicar_efectos():
-    for mp4file in lMP4s:
-        mp3Nuevo = mp4file.replace(".mp4","NUEVO.mp3")
-        do_command('Import2: Filename=' + mp4file)
-        do_command('SelectAll:')
-        do_command('Compressor: Threshold=-20')
-        do_command('Limiter: thresh=-5')
-        do_command('Normalize:')
-        # do_command('Noise:')
-        do_command('Export2: Filename=' + mp3Nuevo)
-        do_command('RemoveTracks:')
-        # do_command('SetPreference: Name=GUI/Theme Value=classic Reload=1')
-
-        mp3file = mp4file.replace(".mp4","NUEVO.mp3")
-        mp4temp = mp4file.replace(".mp4","OLD.mp4")
-        mivideo = ffmpeg.input(mp4file)
-        miaudio = ffmpeg.input(mp3file)
-        salida = ffmpeg.output(miaudio, mivideo.video, mp4temp, shortest=None, vcodec='copy').run()
-        os.remove(mp4file)
-        os.remove(mp3file)
-        os.rename(mp4temp,mp4file)
-aplicar_efectos()
